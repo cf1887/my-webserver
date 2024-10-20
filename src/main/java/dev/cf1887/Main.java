@@ -3,6 +3,8 @@ package dev.cf1887;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import dev.cf1887.requests.HttpRequest;
+
 public class Main {
     public static void main(String[] args) {
         System.out.println("Starte Server...");
@@ -11,7 +13,8 @@ public class Main {
             while (true) {
                 try (Socket client = serverSocket.accept()) {
                     // TODO: Parse Requests
-                    System.out.println(client.toString());
+                    HttpRequest request = HttpRequest.parse(client);
+                    System.out.println(request.getClientString());
                 }
                 catch (Exception e) {
                     // TODO: handle exception

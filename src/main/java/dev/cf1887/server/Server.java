@@ -12,8 +12,8 @@ import dev.cf1887.response.HttpResponse;
 
 public class Server {
 
-    private int port;
-    private ServerSocket serverSocket;
+    private final int port;
+    private final ServerSocket serverSocket;
 
     /**
      * Constructor

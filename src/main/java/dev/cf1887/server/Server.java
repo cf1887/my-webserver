@@ -1,20 +1,23 @@
 package dev.cf1887.server;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Optional;
 
 import dev.cf1887.decoder.HttpDecoder;
 import dev.cf1887.request.HttpRequest;
+import dev.cf1887.response.HttpResponse;
 
 public class Server {
-    
+
     private int port;
     private ServerSocket serverSocket;
 
     /**
      * Constructor
+     * 
      * @param port port that the server will listen to
      * @throws IOException
      */
@@ -25,6 +28,7 @@ public class Server {
 
     /**
      * Main method to start the server
+     * 
      * @throws IOException
      */
     public void start() throws IOException {
@@ -37,6 +41,7 @@ public class Server {
 
     /**
      * This method handles the incoming connection
+     * 
      * @param client incoming client connection
      * @throws IOException
      */
@@ -44,20 +49,24 @@ public class Server {
         Optional<HttpRequest> result = HttpDecoder.decode(client.getInputStream());
         // If decode was successfull
         if (result.isPresent()) {
+            // Get the request instance
             HttpRequest request = result.get();
-            // TODO: Process the request
-            System.out.println("Method: " + request.getMethod());
-            System.out.println("Path: " + request.getPath());
-            System.out.println("Version: " + request.getVersion());
-            System.out.println("Headers: " + String.join(System.lineSeparator(), request.getHeaders().entrySet().stream().map((entry) -> entry.getKey() + ": " + entry.getValue()).toList()));
-            System.out.println("Body: " + request.getBody());
+            // Build the response
+            HttpResponse response = new HttpResponse.Builder()
+                    .withContent("Echo: " + request.getBody())
+                    .build();
+            // Send the response
+            OutputStream os = client.getOutputStream();
+            os.write(response.toString().getBytes());
+            os.flush();
+            os.close();
         }
     }
 
-    /* ******* *
-     * Getters *
-     ********* */
-
+    /**
+     * Getter for the port that the server is listening to
+     * @return current port
+     */
     public int getPort() {
         return port;
     }

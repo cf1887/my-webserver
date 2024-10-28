@@ -13,6 +13,11 @@ public class HttpHandler implements Runnable {
 
     private final Socket client;
 
+    /**
+     * Constructor
+     * 
+     * @param client instance of client connection
+     */
     public HttpHandler(Socket client) {
         this.client = client;
     }

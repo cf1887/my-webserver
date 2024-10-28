@@ -53,6 +53,7 @@ public class Server {
         try {
             serverSocket.close();
         } catch (IOException e) {
+            // TODO: Proper exception handling
             e.printStackTrace();
         }
     }

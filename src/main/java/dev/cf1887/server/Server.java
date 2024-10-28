@@ -1,19 +1,18 @@
 package dev.cf1887.server;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import dev.cf1887.decoder.HttpDecoder;
-import dev.cf1887.request.HttpRequest;
-import dev.cf1887.response.HttpResponse;
+import dev.cf1887.handler.HttpHandler;
 
 public class Server {
 
     private final int port;
     private final ServerSocket serverSocket;
+    private final ExecutorService executorService;
 
     /**
      * Constructor
@@ -21,9 +20,10 @@ public class Server {
      * @param port port that the server will listen to
      * @throws IOException
      */
-    public Server(int port) throws IOException {
+    public Server(int port, int maxThreads) throws IOException {
         this.port = port;
         this.serverSocket = new ServerSocket(port);
+        this.executorService = Executors.newFixedThreadPool(maxThreads);
     }
 
     /**
@@ -32,34 +32,28 @@ public class Server {
      * @throws IOException
      */
     public void start() throws IOException {
+        System.out.println("Server is listening on port " + port + "...");
         while (true) {
+            // TODO: Make set of connections due to the ability of a socket to infinitely
+            // reestablish new connections.
+            // Solution idea: Check for existing connection and do nothing or close the
+            // socket.
+
             // Listen for incoming connections (and enter blocking state)
             Socket client = this.serverSocket.accept();
-            handleConnection(client);
+            executorService.submit(new HttpHandler(client));
         }
     }
 
     /**
-     * This method handles the incoming connection
-     * 
-     * @param client incoming client connection
-     * @throws IOException
+     * Shutdown the executor service
      */
-    private void handleConnection(Socket client) throws IOException {
-        Optional<HttpRequest> result = HttpDecoder.decode(client.getInputStream());
-        // If decode was successfull
-        if (result.isPresent()) {
-            // Get the request instance
-            HttpRequest request = result.get();
-            // Build the response
-            HttpResponse response = new HttpResponse.Builder()
-                    .withContent("Echo: " + request.getBody())
-                    .build();
-            // Send the response
-            OutputStream os = client.getOutputStream();
-            os.write(response.toString().getBytes());
-            os.flush();
-            os.close();
+    public void shutdown() {
+        executorService.shutdown();
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

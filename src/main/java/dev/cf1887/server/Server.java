@@ -65,6 +65,7 @@ public class Server {
 
     /**
      * Getter for the port that the server is listening to
+     * 
      * @return current port
      */
     public int getPort() {
